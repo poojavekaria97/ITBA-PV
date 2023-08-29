@@ -1,0 +1,108 @@
+
+
+/**********************************
+Name : Pooja Vekaria
+
+Nano Project Developing Queries with MS SQL
+
+***********************************/
+
+CREATE TABLE Products (
+    ProductID INT,
+    Product VARCHAR(100),
+    UnitPrice DECIMAL(10, 2),
+    ProductSegment VARCHAR(50),
+    ProfitMargin DECIMAL(5, 2)
+);
+
+
+BULK INSERT Products
+FROM 'C:\Users\pooja\OneDrive\Desktop\BA course\Entry Certificate in Business Analysis (ECBA)\Draft\ECBA_SQL Products.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n'
+);
+
+SELECT * FROM Products;
+
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'Products';
+
+
+CREATE TABLE Region (
+    RegionID INT,
+    UniqueCity VARCHAR(100),
+    UniqueState VARCHAR(100),
+    CityAndState VARCHAR(200)
+);
+
+BULK INSERT Region
+FROM 'C:\Users\pooja\OneDrive\Desktop\BA course\Entry Certificate in Business Analysis (ECBA)\Draft\ECBA_SQL Region.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n'
+);
+
+SELECT * FROM Region;
+
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'Region';
+
+CREATE TABLE Calendar (
+    CalenderID INT,
+    OrderID INT,
+    Day INT,
+    DayName VARCHAR(20),
+    Month INT,
+    MonthName VARCHAR(20),
+    Year INT,
+    WeekNumber INT,
+    Quarter INT,
+    OrderDate DATE
+);
+
+BULK INSERT Calendar
+FROM 'C:\Users\pooja\OneDrive\Desktop\BA course\Entry Certificate in Business Analysis (ECBA)\Draft\ECBA_SQL Calender.CSV'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n'
+);
+
+SELECT * FROM Calendar
+
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'Calender';
+
+
+CREATE TABLE Sales (
+    OrderID INT,
+    ProductID INT,
+    ProductSegment VARCHAR(50),
+    QuantityOrdered INT,
+    UnitPrice DECIMAL(10, 2),
+    SalesAmount DECIMAL(10, 2),
+    COGS DECIMAL(10, 2),
+    CalendarID INT,
+    RegionID INT,
+    StreetAddress VARCHAR(100)
+);
+
+BULK INSERT Sales
+FROM 'C:\Users\pooja\OneDrive\Desktop\BA course\Entry Certificate in Business Analysis (ECBA)\Draft\ECBA_SQL Sales.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n'
+);
+
+SELECT * FROM Sales;
+
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'Sales' OR TABLE_NAME = 'Region' OR TABLE_NAME = 'Products';
