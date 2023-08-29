@@ -1,0 +1,422 @@
+/**********************************
+Name : Pooja Vekaria
+
+Nano Project Developing Queries with MS SQL
+
+Date  : 11/04/23 - 14/04/23
+
+***********************************/
+
+
+
+-- Question 1 Retrieve information about the products with colours that are not null and not silver nor black nor white 
+--and list price is between £75 and £750. Rename the column StandardCost as Price. Finally, please sort 
+--the results by list price in descending order. --
+
+SELECT
+
+[ProductID],[Name],[Color],[ListPrice],[StandardCost] Price
+
+FROM [Production].[Product] 
+
+WHERE [Color] IS NOT NULL
+
+AND [Color] NOT IN ('silver', 'black' , 'white')
+
+AND [ListPrice] BETWEEN 75 AND 750
+
+ORDER BY [ListPrice] DESC
+
+
+-- 43 PRODUCTS FOUND THAT ARE NOT NULL, SILVER, BLACK OR WHITE BETWEEN PRICES OF £75-£750 --
+
+--Question 2 Find all the male employees born between 1962 to 1970 and with hire date greater than 2001 and 
+--female employees born between 1972 and 1975 and hire date between 2001 and 2002 --
+
+SELECT
+
+[BusinessEntityID],[BirthDate],[Gender],[HireDate]
+
+FROM [HumanResources].Employee
+
+WHERE (([Gender] = 'M') AND 
+
+(YEAR([BirthDate]) BETWEEN 1962 AND 1970) AND (YEAR([HireDate]) > 2001)) OR
+
+(([Gender] = 'F') AND 
+
+(YEAR([BirthDate]) BETWEEN 1972 AND 1975) AND (YEAR([HireDate]) BETWEEN 2001 AND 2002))
+
+ -- 19 MALE EMPLOYEES FOUND WITH BIRTHDATES BETWEEN 1962 AND 1970 WITH HIRE DATES GREATER THAN 2001 -- 
+ --NO FEMALE EMPLOYEES HIRED BETWEEN 2001 AND 2002 WITH BIRTHDATES BETWEEN 1972 & 1975--
+
+--Question 3 Create a list of 10 most expensive products that have a product number beginning with ‘BK’. Include 
+--only the product ID, Name and colour --
+
+SELECT TOP 10
+
+[ProductID],[ProductNumber],[Name],[Color],[ListPrice]
+
+FROM [Production].[Product]
+
+WHERE [ProductNumber] LIKE 'BK%'
+
+ORDER BY [ListPrice] DESC
+
+-- The 10 most expensive products range from £3578.27(BK-R93R-56,Road-150,Red,56) to £3374.99(BK-M82B-38,Mountain-100 Black,38).
+
+--Question 4 First create a list of all the contact people where the first 4 characters of their last name are equal to the 
+--first 4 characters of their email address --
+--Second find all the contact people whose first name and the last name begin with the same character --
+--create a new column called full name combining their first name and their last name. Finally add a --
+--column with the length of the full name. --
+
+SELECT 
+
+[FirstName],[LastName],[EmailAddress],
+
+LEFT([LastName],4) FourCharactersInLastName,
+
+CONCAT(LEFT([LastName],4),'.','@adventure-works.com') EmailAddressWithLastName,
+
+CONCAT([FirstName],' ',[LastName]) FullName,
+
+LEN (FirstName + '' + LastName) CharactersInFullName
+
+FROM[Person].[Person] AS PP
+
+LEFT JOIN [Person].[EmailAddress] PE
+
+ON PP.[BusinessEntityID] = PE.[BusinessEntityID]
+
+WHERE UPPER (LEFT([FirstName],1)) = UPPER (LEFT (LastName,1)) 
+
+--1072 employees found where the first character from the first and last name match, columns created for first four characters in last name and 
+--email address with lastname, fullname from first and last name, and characters in fullname.
+
+--Question 5 Return all product subcategories that take an average of 3 days or longer to manufacture.--
+
+SELECT 
+    PPS.[ProductSubcategoryID],
+    PPS.[Name],
+    AVG(PP.[DaysToManufacture]) AS [AverageManufactureTime]
+FROM 
+    [Production].[ProductSubcategory] AS PPS
+LEFT JOIN 
+    [Production].[Product] AS PP ON PPS.[ProductSubcategoryID] = PP.[ProductSubcategoryID]
+GROUP BY 
+    PPS.[ProductSubcategoryID],
+    PPS.[Name]
+HAVING 
+    AVG(PP.[DaysToManufacture]) >= 3;
+
+-- 3 Subcatergories returned that took longer than 3 days to manufacture.
+
+--Question 6 Create a price segmentation for products by defining a criteria that places each item in a segment as 
+--follows: If price is less than £200 then it’s low value. If price is between £201 and £750 then it is mid 
+--value. If price is between £751 and £1250 then it is mid to high value. All else is higher value. Filter the 
+--results only for products that are black, silver and red (colour).--
+
+ SELECT 
+
+[ProductID],[Name],[ListPrice],[Color],
+
+CASE
+
+WHEN [ListPrice] < 200 THEN 'Low Value'
+
+WHEN [ListPrice] BETWEEN 201 AND 750 THEN 'Mid Value'
+
+WHEN [ListPrice] BETWEEN 751 AND 1250 THEN 'Mid-High Value'
+
+ELSE 'Higher Value'
+
+END AS PriceSegmentation
+
+FROM [Production].[Product]
+
+WHERE [Color] IN ('Red','Black','Silver')
+
+--174 Products returned which range from low value to higher value in the colours red, black and silver. 
+
+--Question 7 How many distinct job titles are there in the Employee table--
+
+SELECT DISTINCT
+
+[JobTitle]
+
+FROM [HumanResources].[Employee]
+
+--67 Distinct Job Titles found employee table.--
+
+--Question 8 Use the Employee table and calculate the ages of each employee at the time of hiring--
+
+SELECT 
+[BusinessEntityID],[BirthDate],[HireDate],
+
+DATEDIFF(yy,[BirthDate],([HireDate])) AS Age@HireDate
+
+FROM[HumanResources].[Employee]
+
+--290 Employees returned --
+
+--Question 9 How many employees will be due a Long Service Award in the next 5 years, if long service is 20 years --
+
+SELECT
+[BusinessEntityID],
+
+DATEDIFF(YEAR,[HireDate],Getdate()) AS CurrentService,
+
+5 + DATEDIFF(YEAR,[HireDate],Getdate()) AS CurrentServiceAddFiveYears,
+
+'Due'AS AwardDue
+
+FROM [HumanResources].[Employee]
+
+WHERE DATEDIFF(YEAR,[HireDate],Getdate())=15
+
+--74 employees are due for the long term service award in five years time. 
+
+--Question 10 How many more years does each employee have to work before reaching retirement, if the retirement age is 65?--
+
+SELECT
+
+[BusinessEntityID],
+
+DATEDIFF(YEAR, [BirthDate], GETDATE()) AS [CurrentAge],
+    
+CASE
+        
+WHEN DATEDIFF(YEAR, [BirthDate], GETDATE()) < 65 THEN 65 - DATEDIFF(YEAR, [BirthDate], GETDATE())
+        
+ELSE 0
+    
+END AS [RemainingYearsUntilRetirement]
+
+FROM [HumanResources].[Employee]
+
+--290 employees returned of which 18 employees are over the age of retiremnt of 65.
+
+--Question 11 Implement a new pricing policy on the product table based on the colour of the item 
+--Create a column called Newprice with the following values: If the colour is white please increase 
+--the price by 8%, If yellow reduce the price by 7.5%, If black increase the price by 17.2%.
+--If multi, silver, silver/black or blue take the square root of the price and double that value. 
+--For each item, calculate a commission of 37.5% of new prices. --
+
+SELECT 
+
+[ProductID], [Name], [Color], [ListPrice],
+
+CASE
+
+WHEN [Color] = 'white' THEN [ListPrice] * 1.08
+
+WHEN [Color] = 'yellow' THEN [ListPrice] * 0.925
+
+WHEN [Color] = 'black' THEN [ListPrice] * 1.172
+
+WHEN [Color] IN ('multi', 'silver', 'silver/black', 'blue') THEN SQRT([ListPrice]) * 2
+
+ELSE [ListPrice]
+
+END AS NewPrice,
+
+CASE
+
+WHEN [Color] = 'white' THEN ([ListPrice] * 0.375) * 0.375
+
+WHEN [Color] = 'yellow' THEN ([ListPrice] * 0.925) * 0.375
+
+WHEN [Color] = 'black' THEN ([ListPrice] * 1.172) * 0.375
+
+WHEN [Color] IN ('multi', 'silver', 'silver/black', 'blue') THEN (SQRT([ListPrice]) * 2) * 0.375
+
+ELSE [ListPrice] * 0.375
+
+END AS Commission
+
+FROM [Production].[Product]
+
+WHERE [ListPrice] IS NOT NULL AND [ListPrice] <> 0;
+
+--304 Products returned which fall into the conditions above. 
+
+--Question 12 Print the information about all the Sales.Person and their sales quota. For every Sales person you 
+--should provide their FirstName, LastName, HireDate, SickLeaveHours and Region where they work.--
+
+SELECT DISTINCT
+
+[FirstName],[LastName],[HireDate],[SickLeaveHours],SST.[Name] AS [Region]
+
+FROM [HumanResources].[Employee] HRE
+
+JOIN [Person].[Person] PP ON PP.BusinessEntityID = HRE.[BusinessEntityID]
+
+JOIN [Sales].[SalesPerson] SSP ON SSP.[BusinessEntityID] = HRE.[BusinessEntityID]
+
+JOIN [Sales].[SalesTerritory] SST ON SSP.[TerritoryID] = SST.[TerritoryID]
+
+JOIN [Sales].[SalesPersonQuotaHistory] SSPQH ON SSP.[BusinessEntityID] = SSPQH.[BusinessEntityID]
+
+--14 sales person returned with there sales quota, hiredate, sickleavehours and region in which they work.
+
+--Question 13 Using adventure works, write a query to extract the following information.
+--• Product name-- 
+--• Product category name-- 
+--• Product subcategory name-- 
+--• Sales person-- 
+--• Revenue-- 
+--• Month of transaction-- 
+--• Quarter of transaction-- 
+--• Region --
+
+SELECT
+P.[Name] AS 'Product Name',
+
+PC.[Name] AS 'Product Category Name',
+
+PSC.[Name] AS 'Product Subcategory Name',
+
+CONCAT([FirstName], ' ', [LastName]) AS 'Sales Person',
+
+SUM(SOD.[LineTotal]) AS 'Revenue',
+
+DATEPART(MONTH, SOH.OrderDate) AS 'Month of Transaction',
+
+CONCAT('Q', DATEPART(QUARTER, SOH.[OrderDate])) AS 'Quarter of Transaction',
+
+ST.[Name] AS 'Region'
+
+FROM [Sales].[SalesOrderHeader]SOH
+
+JOIN [Sales].[SalesOrderDetail]SOD ON SOH.[SalesOrderID] = SOD.[SalesOrderID]
+
+JOIN [Production].[Product]P ON SOD.[ProductID] = P.[ProductID]
+
+JOIN [Production].[ProductSubcategory]PSC ON P.[ProductSubcategoryID] = PSC.[ProductSubcategoryID]
+
+JOIN [Production].[ProductCategory]PC ON PSC.[ProductCategoryID] = PC.[ProductCategoryID]
+
+JOIN [Person].[Person]PP ON SOH.[SalesPersonID] = PP.BusinessEntityID
+
+JOIN [Sales].[SalesTerritory]ST ON SOH.TerritoryID = ST.TerritoryID
+
+GROUP BY
+
+P.[Name],
+
+PC.[Name],
+
+PSC.[Name],
+
+CONCAT([FirstName], ' ', [LastName]),
+
+DATEPART(MONTH, SOH.OrderDate),
+
+CONCAT('Q', DATEPART(QUARTER, SOH.OrderDate)),
+
+ST.[Name]
+
+--28,423 rows returned with the extraction conditions above. 
+
+--Question 14 Display the information about the details of an order i.e. order number, order date, amount of order, 
+--which customer gives the order and which salesman works for that customer and how much commission he gets for an order.--
+
+SELECT
+
+SOH.[SalesOrderNumber] AS 'Order Number',
+
+SOH.[OrderDate] AS 'Order Date',
+
+SOH.[TotalDue] AS 'Amount of Order',
+
+CONCAT(PP1.FirstName, ' ', PP1.LastName) AS 'Salesman',
+
+CONCAT(PP2.FirstName, ' ', PP2.LastName) AS 'Customer Name',
+
+SP.[CommissionPct] AS 'Commission Percentage'
+
+FROM [Sales].[SalesOrderHeader] SOH
+
+JOIN [Sales].[SalesPerson] SP ON SOH.[SalesPersonID] = SP.[BusinessEntityID]
+
+JOIN [Person].[Person] PP1 ON SP.[BusinessEntityID] = PP1.[BusinessEntityID]
+
+JOIN [Sales].[Customer] C ON SOH.[CustomerID] = C.[CustomerID]
+
+JOIN [Person].[Person] PP2 ON C.[PersonID] = PP2.[BusinessEntityID]
+
+--3806 rows returned with the conditions above, showing order number, order date,
+--amount of order the salesman and commision per order and what customer dealt with which salesman.--
+
+--Question 15 For all the products calculate --
+--• Commission as 14.790% of standard cost, --
+--• Margin, if standard cost is increased or decreased as follows:--
+--- Black: +22%,--
+--- Red: -12%--
+--- Silver: +15%--
+--- Multi: +5%--
+--- White: Two times original cost divided by the square root of cost--
+--- For other colors, standard cost remains the same--
+
+WITH CTE AS
+
+(SELECT
+
+[StandardCost],[Color],[ListPrice],
+
+CASE [Color]
+
+WHEN 'Black' THEN [StandardCost] * 1.22
+
+WHEN 'Red' THEN [StandardCost] * 0.88
+
+WHEN 'Silver' THEN [StandardCost] * 1.15
+
+WHEN 'Multi' THEN [StandardCost] * 1.05
+
+WHEN 'White' THEN ([StandardCost] * 2) / SQRT([StandardCost])
+
+ELSE [StandardCost]
+
+END AS AdjustedStandardCost
+
+FROM [Production].[Product])
+
+SELECT
+    
+[Color],[StandardCost],[ListPrice],[StandardCost] * 0.14790 AS Commission,
+
+([ListPrice] - [AdjustedStandardCost]) AS Margin
+
+FROM CTE
+
+ORDER BY [StandardCost] DESC
+
+--504 rows returned with the conditions above which show the new standard cost and margins.
+
+--Question 16 Create a view to find out the top 5 most expensive products for each colour --
+
+CREATE VIEW [Production].[ExpensiveProductsByColour] AS
+
+SELECT 
+
+[ProductID],[Name],[Color],[ListPrice]
+
+FROM
+
+(SELECT 
+
+[ProductID],[Name],[Color],[ListPrice],
+
+ROW_NUMBER() OVER (PARTITION BY [Color] ORDER BY [ListPrice] DESC) AS RowNum
+
+FROM [Production].[Product]) AS T
+
+WHERE T.RowNum <= 5
+
+SELECT *
+FROM [Production].[ExpensiveProductsByColour]
+
+--45 rows returned with the conditions above which show the top five expensive products for each colour, some colours do not have a top 5
+--as only a couple of products sold in those colours by using the SELECT *FROM [Production].[ExpensiveProductsByColour] syntax .--
